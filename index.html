@@ -161,6 +161,21 @@
 </head>
 <body>
 
+<!-- Password auth screen -->
+<div id="auth-screen" style="display:none">
+  <div style="max-width:360px;margin:120px auto;padding:0 20px;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">📋</div>
+    <h2 style="font-size:20px;font-weight:600;margin-bottom:8px">スキルカルテ</h2>
+    <p style="font-size:14px;color:#6b6b66;margin-bottom:24px">パスワードを入力してください</p>
+    <input id="pw-input" type="password" placeholder="パスワード"
+      style="width:100%;padding:10px 12px;border:1px solid #e4e2dc;border-radius:8px;font-size:15px;margin-bottom:10px;font-family:inherit"
+      onkeydown="if(event.key==='Enter')checkPw()">
+    <div id="pw-error" style="color:#c0392b;font-size:13px;margin-bottom:10px;display:none">パスワードが違います</div>
+    <button onclick="checkPw()"
+      style="width:100%;padding:12px;background:#1a6b4a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer">ログイン</button>
+  </div>
+</div>
+
 <!-- Setup screen (shown before Supabase is configured) -->
 <div id="setup-screen" style="display:none">
   <div class="setup">
@@ -251,8 +266,8 @@ function defaultSkills(){
 
 // ── Config (localStorage) ─────────────────────────────────────────────────────
 // ★ここを書き換えてもOK（localStorageより優先されます）
-const HARDCODED_URL = 'https://wlmomylacenzgtvcoxlb.supabase.co';
-const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsbW9teWxhY2Vuemd0dmNveGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzE2MjUsImV4cCI6MjA5Njc0NzYyNX0.ld1XMUXd2tfU5AxdbTTcbTk5VZJ0UfcRI8FFDy9ALCc';
+const HARDCODED_URL = 'YOUR_SUPABASE_URL';
+const HARDCODED_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 function getConfig(){
   if(HARDCODED_URL !== 'YOUR_SUPABASE_URL'){
@@ -812,8 +827,20 @@ function exportSingle(id){
   toast('Excelを書き出しました');
 }
 
+// ── Password auth ─────────────────────────────────────────────────────────────
+function checkPw(){
+  const v=document.getElementById('pw-input').value;
+  if(v==='skillcarte1001'){
+    localStorage.setItem('sk_auth','ok');
+    document.getElementById('auth-screen').style.display='none';
+    startApp();
+  }else{
+    document.getElementById('pw-error').style.display='block';
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-(async()=>{
+async function startApp(){
   const cfg=getConfig();
   if(!cfg){
     document.getElementById('setup-screen').style.display='block';
@@ -823,6 +850,14 @@ function exportSingle(id){
   document.getElementById('main-app').style.display='flex';
   employees=await dbGetAll();
   renderList();
+}
+
+(()=>{
+  if(localStorage.getItem('sk_auth')==='ok'){
+    startApp();
+  }else{
+    document.getElementById('auth-screen').style.display='block';
+  }
 })();
 </script>
 </body>
