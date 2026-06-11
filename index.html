@@ -201,7 +201,7 @@
   <aside class="sb">
     <div class="sb-hd"><h1><span>📋</span> スキルカルテ</h1></div>
     <div class="sb-tools">
-      <input type="search" id="search" placeholder="氏名・事業所で検索…" oninput="renderList()">
+      <input type="search" id="search" placeholder="氏名（苗字）・事業所で検索…" oninput="renderList()">
       <div class="fr">
         <button class="fb on" data-filter="all" onclick="setFilter(this)">全員</button>
         <button class="fb" data-filter="社員" onclick="setFilter(this)">社員</button>
@@ -266,8 +266,8 @@ function defaultSkills(){
 
 // ── Config (localStorage) ─────────────────────────────────────────────────────
 // ★ここを書き換えてもOK（localStorageより優先されます）
-const HARDCODED_URL = 'https://wlmomylacenzgtvcoxlb.supabase.co';
-const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsbW9teWxhY2Vuemd0dmNveGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzE2MjUsImV4cCI6MjA5Njc0NzYyNX0.ld1XMUXd2tfU5AxdbTTcbTk5VZJ0UfcRI8FFDy9ALCc';
+const HARDCODED_URL = 'YOUR_SUPABASE_URL';
+const HARDCODED_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 function getConfig(){
   if(HARDCODED_URL !== 'YOUR_SUPABASE_URL'){
@@ -427,7 +427,7 @@ function selectEmp(id){
   if(emp)renderView(emp);renderList();
 }
 function newEmp(){
-  const emp={id:newId(),name:'',empid:'',dept:'',role:'',joined:'',evaluator:'',
+  const emp={id:newId(),name:'',lastName:'',firstName:'',dept:'',role:'',joined:'',evaluator:'',
     contract:'社員',subType:'一般社員',
     skills:defaultSkills(),certs:[],strength:'',dev:'',createdAt:new Date().toISOString()};
   employees.push(emp);currentId=emp.id;renderList();renderEdit(emp);
@@ -453,7 +453,6 @@ function renderView(emp){
           <div class="pname">${emp.name||'（氏名未入力）'}</div>
           <div class="psub">${emp.role||'—'} ／ ${emp.dept||'—'}</div>
           <div class="br">
-            <span class="badge b-gray">${emp.empid||'番号未設定'}</span>
             <span class="badge b-green">入社 ${joined}</span>
             <span class="badge ${cfg.badge}">${emp.contract||'—'}</span>
             ${emp.subType?`<span class="badge b-gray">${emp.subType}</span>`:''}
@@ -560,8 +559,8 @@ function renderEdit(emp){
         <div class="pav" id="ed-av" style="width:52px;height:52px;font-size:17px">${initials(editEmp.name)}</div>
         <div style="flex:1">
           <div class="fg">
-            <div class="fi"><label>氏名</label><input id="ed-name" value="${esc(editEmp.name)}" oninput="editEmp.name=this.value;document.getElementById('ed-av').textContent=initials(this.value)"></div>
-            <div class="fi"><label>社員番号</label><input id="ed-empid" value="${esc(editEmp.empid)}"></div>
+            <div class="fi"><label>苗字</label><input id="ed-lastname" value="${esc(editEmp.lastName||'')}" oninput="editEmp.lastName=this.value;editEmp.name=(this.value+' '+(editEmp.firstName||'')).trim();document.getElementById('ed-av').textContent=initials(editEmp.name)"></div>
+            <div class="fi"><label>名前</label><input id="ed-firstname" value="${esc(editEmp.firstName||'')}" oninput="editEmp.firstName=this.value;editEmp.name=((editEmp.lastName||'')+' '+this.value).trim();document.getElementById('ed-av').textContent=initials(editEmp.name)"></div>
           </div>
         </div>
       </div>
@@ -677,8 +676,10 @@ function addCert(){
 }
 
 async function doSave(){
-  editEmp.name=document.getElementById('ed-name').value;
-  editEmp.empid=document.getElementById('ed-empid').value;
+  editEmp.lastName=document.getElementById('ed-lastname').value;
+  editEmp.firstName=document.getElementById('ed-firstname').value;
+  editEmp.name=(editEmp.lastName+' '+editEmp.firstName).trim();
+  editEmp.empid='';
   editEmp.dept=document.getElementById('ed-dept').value;
   editEmp.role=document.getElementById('ed-role').value;
   editEmp.joined=document.getElementById('ed-joined').value;
@@ -774,11 +775,11 @@ function drawRadar(emp){
 
 // ── Excel Export ──────────────────────────────────────────────────────────────
 function buildRows(list){
-  const fixedHdrs=['社員番号','氏名','契約形態','小分類','事業所','役職','入社年月','評価者'];
+  const fixedHdrs=['苗字','名前','契約形態','小分類','事業所','役職','入社年月','評価者'];
   const skillHdrs=SKILL_CATS.flatMap(cat=>cat.subs.map(s=>`[${cat.key}] ${s}`));
   const hdrs=[...fixedHdrs,...skillHdrs,'資格・認定','強み','育成課題'];
   const rows=list.map(e=>{
-    const base=[e.empid||'',e.name||'',e.contract||'',e.subType||'',e.dept||'',e.role||'',e.joined||'',e.evaluator||''];
+    const base=[e.lastName||'',e.firstName||'',e.contract||'',e.subType||'',e.dept||'',e.role||'',e.joined||'',e.evaluator||''];
     const svals=SKILL_CATS.flatMap(cat=>cat.subs.map(sname=>{
       const sk=(e.skills||[]).find(s=>s.cat===cat.key&&s.n===sname);
       return sk?sk.v:'';
@@ -808,7 +809,7 @@ function exportSingle(id){
   const emp=employees.find(e=>e.id===id);if(!emp)return;
   const wb=XLSX.utils.book_new();
   const rows=[
-    ['氏名',emp.name||''],['社員番号',emp.empid||''],
+    ['苗字',emp.lastName||''],['名前',emp.firstName||''],
     ['契約形態',emp.contract||''],['小分類',emp.subType||''],
     ['事業所',emp.dept||''],['役職',emp.role||''],
     ['入社年月',emp.joined||''],['評価者',emp.evaluator||''],
