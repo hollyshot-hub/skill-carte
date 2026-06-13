@@ -270,7 +270,7 @@ const HARDCODED_URL = 'https://wlmomylacenzgtvcoxlb.supabase.co';
 const HARDCODED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndsbW9teWxhY2Vuemd0dmNveGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzE2MjUsImV4cCI6MjA5Njc0NzYyNX0.ld1XMUXd2tfU5AxdbTTcbTk5VZJ0UfcRI8FFDy9ALCc';
 
 function getConfig(){
-  if(HARDCODED_URL !== 'https://wlmomylacenzgtvcoxlb.supabase.co'){
+  if(HARDCODED_URL !== 'YOUR_SUPABASE_URL'){
     return {url: HARDCODED_URL, key: HARDCODED_KEY};
   }
   const url=localStorage.getItem('sb_url');
