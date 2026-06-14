@@ -249,7 +249,7 @@ const SKILL_CATS = [
   { key:'調理技術', subs:['食材の知識','下処理','釜調理','スチコン','冷却器','ゼリー','形態食'] },
   { key:'衛生管理', subs:['衛生意識','衛生教育','衛生の運用'] },
   { key:'学校対応', subs:['礼儀・作法','栄養士との関係構築','児童・生徒への対応'] },
-  { key:'組織構築', subs:['新人育成','言葉遣い','自立した組織づくり'] },
+  { key:'組織構築', subs:['新人育成','応援要請頻度','言葉遣い','自立した組織づくり'] },
 ];
 const CONTRACT_TYPES = [
   { key:'社員',        badge:'b-blue',   sub:['責任者','副責任者','一般社員'] },
@@ -451,7 +451,7 @@ function renderView(emp){
         <div class="pav">${initials(emp.name)}</div>
         <div>
           <div class="pname">${emp.name||'（氏名未入力）'}</div>
-          <div class="psub">${emp.role||'—'} ／ ${emp.dept||'—'}</div>
+          <div class="psub">${emp.dept||'—'}</div>
           <div class="br">
             <span class="badge b-green">入社 ${joined}</span>
             <span class="badge ${cfg.badge}">${emp.contract||'—'}</span>
@@ -566,7 +566,6 @@ function renderEdit(emp){
       </div>
       <div class="fg">
         <div class="fi"><label>事業所</label><input id="ed-dept" value="${esc(editEmp.dept)}"></div>
-        <div class="fi"><label>役職</label><input id="ed-role" value="${esc(editEmp.role)}"></div>
         <div class="fi"><label>入社年月</label><input type="month" id="ed-joined" value="${esc(editEmp.joined)}"></div>
         <div class="fi"><label>評価者</label><input id="ed-evaluator" value="${esc(editEmp.evaluator)}"></div>
       </div>
@@ -681,7 +680,6 @@ async function doSave(){
   editEmp.name=(editEmp.lastName+' '+editEmp.firstName).trim();
   editEmp.empid='';
   editEmp.dept=document.getElementById('ed-dept').value;
-  editEmp.role=document.getElementById('ed-role').value;
   editEmp.joined=document.getElementById('ed-joined').value;
   editEmp.evaluator=document.getElementById('ed-evaluator').value;
   editEmp.strength=document.getElementById('ed-strength').value;
@@ -775,11 +773,11 @@ function drawRadar(emp){
 
 // ── Excel Export ──────────────────────────────────────────────────────────────
 function buildRows(list){
-  const fixedHdrs=['苗字','名前','契約形態','小分類','事業所','役職','入社年月','評価者'];
+  const fixedHdrs=['苗字','名前','契約形態','小分類','事業所','入社年月','評価者'];
   const skillHdrs=SKILL_CATS.flatMap(cat=>cat.subs.map(s=>`[${cat.key}] ${s}`));
   const hdrs=[...fixedHdrs,...skillHdrs,'資格・認定','強み','育成課題'];
   const rows=list.map(e=>{
-    const base=[e.lastName||'',e.firstName||'',e.contract||'',e.subType||'',e.dept||'',e.role||'',e.joined||'',e.evaluator||''];
+    const base=[e.lastName||'',e.firstName||'',e.contract||'',e.subType||'',e.dept||'',e.joined||'',e.evaluator||''];
     const svals=SKILL_CATS.flatMap(cat=>cat.subs.map(sname=>{
       const sk=(e.skills||[]).find(s=>s.cat===cat.key&&s.n===sname);
       return sk?sk.v:'';
@@ -811,7 +809,7 @@ function exportSingle(id){
   const rows=[
     ['苗字',emp.lastName||''],['名前',emp.firstName||''],
     ['契約形態',emp.contract||''],['小分類',emp.subType||''],
-    ['事業所',emp.dept||''],['役職',emp.role||''],
+    ['事業所',emp.dept||''],
     ['入社年月',emp.joined||''],['評価者',emp.evaluator||''],
     [],['大分類','中分類','評価（1-5）','レベル'],
     ...SKILL_CATS.flatMap(cat=>cat.subs.map(sname=>{
