@@ -258,7 +258,7 @@ const SKILL_CATS_BASE_PART = [
   { key:'組織構築', subs:['新人育成','言葉遣い'] },
 ];
 const SKILL_CATS_PART = [
-  { key:'その他', subs:['受けた指示を理解できる','手が開いたら次の指示を聞くことができる','勝手に判断しない','きちんとコミュニケーションが取れる','急な欠勤が無い','業務への姿勢','早出や残業要請への対応'] },
+  { key:'その他', subs:['受けた指示を理解できる','手が空いたら次の指示を聞くことができる','勝手に判断しない','きちんとコミュニケーションが取れる','急な欠勤が無い','業務への姿勢','早出や残業要請への対応'] },
 ];
 const CONTRACT_TYPES = [
   { key:'社員',        badge:'b-blue',   sub:['責任者','副責任者','一般社員'] },
@@ -584,7 +584,7 @@ function renderEdit(emp){
         </div>
       </div>
       <div class="fg">
-        <div class="fi"><label>事業所</label><input id="ed-dept" value="${esc(editEmp.dept)}"></div>
+        <div class="fi"><label>事業所</label><select id="ed-dept" style="padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-family:inherit;background:var(--bg);color:var(--text)"><option value="">選択してください</option><option value="林町小学校" ${editEmp.dept==='林町小学校'?'selected':''}>林町小学校</option><option value="第十中学校" ${editEmp.dept==='第十中学校'?'selected':''}>第十中学校</option><option value="本部" ${editEmp.dept==='本部'?'selected':''}>本部</option><option value="その他" ${editEmp.dept==='その他'?'selected':''}>その他</option></select></div>
         <div class="fi"><label>入社年月</label><input type="month" id="ed-joined" value="${esc(editEmp.joined)}"></div>
         <div class="fi"><label>評価者</label><input id="ed-evaluator" value="${esc(editEmp.evaluator)}"></div>
       </div>
