@@ -251,6 +251,12 @@ const SKILL_CATS = [
   { key:'学校対応', subs:['礼儀・作法','栄養士との関係構築','児童・生徒への対応'] },
   { key:'組織構築', subs:['新人育成','応援要請頻度','言葉遣い','自立した組織づくり'] },
 ];
+const SKILL_CATS_BASE_PART = [
+  { key:'調理技術', subs:['食材の知識','下処理','釜調理'] },
+  { key:'衛生管理', subs:['衛生意識','衛生教育'] },
+  { key:'学校対応', subs:['礼儀・作法','児童・生徒への対応'] },
+  { key:'組織構築', subs:['新人育成','言葉遣い'] },
+];
 const SKILL_CATS_PART = [
   { key:'その他', subs:['受けた指示を理解できる','手が開いたら次の指示を聞くことができる','勝手に判断しない','きちんとコミュニケーションが取れる','急な欠勤が無い','業務への姿勢','早出や残業要請への対応'] },
 ];
@@ -264,12 +270,12 @@ const CERT_OPTIONS = ['調理師','栄養士','管理栄養士'];
 const CAT_COLORS = {'調理技術':'#2563a8','衛生管理':'#1a6b4a','学校対応':'#f0a500','組織構築':'#6b3fa0','その他':'#6b6b66'};
 
 function defaultSkills(contract){
-  const base=SKILL_CATS.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
   if(contract==='ロングパート'||contract==='パート'){
+    const base=SKILL_CATS_BASE_PART.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
     const extra=SKILL_CATS_PART.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
     return [...base,...extra];
   }
-  return base;
+  return SKILL_CATS.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
 }
 
 // ── Config (localStorage) ─────────────────────────────────────────────────────
@@ -390,7 +396,7 @@ function closeOv(ok){
 }
 function getActiveCats(emp){
   const c=emp?emp.contract:'';
-  if(c==='ロングパート'||c==='パート') return [...SKILL_CATS,...SKILL_CATS_PART];
+  if(c==='ロングパート'||c==='パート') return [...SKILL_CATS_BASE_PART,...SKILL_CATS_PART];
   return SKILL_CATS;
 }
 function catAvg(emp,cat){
