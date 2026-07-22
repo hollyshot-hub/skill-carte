@@ -266,7 +266,7 @@ const CAT_COLORS = {'調理技術':'#2563a8','衛生管理':'#1a6b4a','学校対
 function defaultSkills(contract){
   const base=SKILL_CATS.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
   if(contract==='ロングパート'||contract==='パート'){
-    const extra=SKILL_CATS_PART.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3}})));
+    const extra=SKILL_CATS_PART.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
     return [...base,...extra];
   }
   return base;
