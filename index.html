@@ -132,9 +132,9 @@
   .score-card .sc-val{font-size:26px;font-weight:700}
   .score-card .sc-label{font-size:12px;color:var(--muted);margin-top:2px}
   .dot-調理技術{background:#2563a8}.dot-衛生管理{background:#1a6b4a}
-  .dot-学校対応{background:#f0a500}.dot-組織構築{background:#6b3fa0}
+  .dot-学校対応{background:#f0a500}.dot-組織構築{background:#6b3fa0}.dot-その他{background:#6b6b66}
   .hd-調理技術{background:#e8f0fc}.hd-衛生管理{background:#e4f2eb}
-  .hd-学校対応{background:#fff8e6}.hd-組織構築{background:#f0ebfa}
+  .hd-学校対応{background:#fff8e6}.hd-組織構築{background:#f0ebfa}.hd-その他{background:#f0f0ee}
   /* Setup screen */
   .setup{max-width:520px;margin:60px auto;padding:0 20px}
   .setup h2{font-size:20px;font-weight:700;margin-bottom:8px}
@@ -251,6 +251,9 @@ const SKILL_CATS = [
   { key:'学校対応', subs:['礼儀・作法','栄養士との関係構築','児童・生徒への対応'] },
   { key:'組織構築', subs:['新人育成','応援要請頻度','言葉遣い','自立した組織づくり'] },
 ];
+const SKILL_CATS_PART = [
+  { key:'その他', subs:['受けた指示を理解できる','手が開いたら次の指示を聞くことができる','勝手に判断しない','きちんとコミュニケーションが取れる','急な欠勤が無い','業務への姿勢','早出や残業要請への対応'] },
+];
 const CONTRACT_TYPES = [
   { key:'社員',        badge:'b-blue',   sub:['責任者','副責任者','一般社員'] },
   { key:'ロングパート', badge:'b-purple', sub:[] },
@@ -258,10 +261,15 @@ const CONTRACT_TYPES = [
 ];
 const LEVELS = ['','初級','基礎','中級','上級','エキスパート'];
 const CERT_OPTIONS = ['調理師','栄養士','管理栄養士'];
-const CAT_COLORS = {'調理技術':'#2563a8','衛生管理':'#1a6b4a','学校対応':'#f0a500','組織構築':'#6b3fa0'};
+const CAT_COLORS = {'調理技術':'#2563a8','衛生管理':'#1a6b4a','学校対応':'#f0a500','組織構築':'#6b3fa0','その他':'#6b6b66'};
 
-function defaultSkills(){
-  return SKILL_CATS.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
+function defaultSkills(contract){
+  const base=SKILL_CATS.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3})));
+  if(contract==='ロングパート'||contract==='パート'){
+    const extra=SKILL_CATS_PART.flatMap(cat=>cat.subs.map(n=>({cat:cat.key,n,v:3}})));
+    return [...base,...extra];
+  }
+  return base;
 }
 
 // ── Config (localStorage) ─────────────────────────────────────────────────────
@@ -380,6 +388,11 @@ function closeOv(ok){
   document.getElementById('ov').classList.remove('open');
   if(ovCb){const cb=ovCb;ovCb=null;cb(ok)}
 }
+function getActiveCats(emp){
+  const c=emp?emp.contract:'';
+  if(c==='ロングパート'||c==='パート') return [...SKILL_CATS,...SKILL_CATS_PART];
+  return SKILL_CATS;
+}
 function catAvg(emp,cat){
   const ss=(emp.skills||[]).filter(s=>s.cat===cat);
   if(!ss.length)return 0;
@@ -429,7 +442,7 @@ function selectEmp(id){
 function newEmp(){
   const emp={id:newId(),name:'',lastName:'',firstName:'',dept:'',role:'',joined:'',evaluator:'',
     contract:'社員',subType:'一般社員',
-    skills:defaultSkills(),certs:[],strength:'',dev:'',createdAt:new Date().toISOString()};
+    skills:defaultSkills('社員'),certs:[],strength:'',dev:'',createdAt:new Date().toISOString()};
   employees.push(emp);currentId=emp.id;renderList();renderEdit(emp);
 }
 
@@ -460,7 +473,7 @@ function renderView(emp){
         </div>
       </div>
       <div class="score-grid">
-        ${SKILL_CATS.map(cat=>`
+        ${getActiveCats(emp).map(cat=>`
           <div class="score-card">
             <div class="sc-val" style="color:${CAT_COLORS[cat.key]}">${catAvg(emp,cat.key)}</div>
             <div class="sc-label">${cat.key}</div>
@@ -494,7 +507,7 @@ function renderView(emp){
   `;
 }
 function renderSkillView(emp){
-  return SKILL_CATS.map(cat=>`
+  return getActiveCats(emp).map(cat=>`
     <div class="cat-block">
       <div class="cat-hd hd-${cat.key}" onclick="toggleCat(this)">
         <div class="cat-hd-left">
@@ -617,7 +630,7 @@ function setSub(s){
   document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',b.textContent===s));
 }
 function renderEdSkills(){
-  document.getElementById('ed-skills').innerHTML=SKILL_CATS.map(cat=>`
+  document.getElementById('ed-skills').innerHTML=getActiveCats(editEmp).map(cat=>`
     <div class="cat-block">
       <div class="cat-hd hd-${cat.key}" onclick="toggleCat(this)">
         <div class="cat-hd-left">
@@ -685,7 +698,7 @@ async function doSave(){
   editEmp.strength=document.getElementById('ed-strength').value;
   editEmp.dev=document.getElementById('ed-dev').value;
   editEmp.updatedAt=new Date().toISOString();
-  for(const cat of SKILL_CATS){
+  for(const cat of getActiveCats(editEmp)){
     for(const sname of cat.subs){
       if(!editEmp.skills.find(s=>s.cat===cat.key&&s.n===sname))
         editEmp.skills.push({cat:cat.key,n:sname,v:3});
@@ -774,11 +787,12 @@ function drawRadar(emp){
 // ── Excel Export ──────────────────────────────────────────────────────────────
 function buildRows(list){
   const fixedHdrs=['苗字','名前','契約形態','小分類','事業所','入社年月','評価者'];
-  const skillHdrs=SKILL_CATS.flatMap(cat=>cat.subs.map(s=>`[${cat.key}] ${s}`));
+  const allCats=[...SKILL_CATS,...SKILL_CATS_PART];
+  const skillHdrs=allCats.flatMap(cat=>cat.subs.map(s=>`[${cat.key}] ${s}`));
   const hdrs=[...fixedHdrs,...skillHdrs,'資格・認定','強み','育成課題'];
   const rows=list.map(e=>{
     const base=[e.lastName||'',e.firstName||'',e.contract||'',e.subType||'',e.dept||'',e.joined||'',e.evaluator||''];
-    const svals=SKILL_CATS.flatMap(cat=>cat.subs.map(sname=>{
+    const svals=allCats.flatMap(cat=>cat.subs.map(sname=>{
       const sk=(e.skills||[]).find(s=>s.cat===cat.key&&s.n===sname);
       return sk?sk.v:'';
     }));
