@@ -624,6 +624,10 @@ function setContract(key){
     sa.style.display=cfg.sub.length?'block':'none';
     document.getElementById('sub-grid').innerHTML=cfg.sub.map(s=>`<button class="sbtn${editEmp.subType===s?' on':''}" onclick="setSub('${s}')">${s}</button>`).join('');
   }
+  if(changed){
+    editEmp.skills=defaultSkills(key);
+    renderEdSkills();
+  }
 }
 function setSub(s){
   editEmp.subType=s;
